@@ -13,6 +13,7 @@ function LoginPage() {
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
+    console.log("Send OTP button clicked");
     setLoading(true);
     setMessage('');
     setError('');
