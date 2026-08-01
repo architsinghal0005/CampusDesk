@@ -6,7 +6,7 @@ import bookingRoutes from './routes/bookingRoutes.js';
 import { startBookingCron } from './utils/bookingCron.js';
 
 const app = express();
-
+console.log("CLIENT_URL:", process.env.CLIENT_URL);
 app.use(
   cors({
     origin: [
