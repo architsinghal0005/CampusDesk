@@ -7,12 +7,15 @@ import { startBookingCron } from './utils/bookingCron.js';
 
 const app = express();
 console.log("CLIENT_URL:", process.env.CLIENT_URL);
+app.use((req, res, next) => {
+  console.log("Origin:", req.headers.origin);
+  next();
+});
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      process.env.CLIENT_URL || "",
-    ],
+    origin: true,
+    credentials: true,
   })
 );
 app.use(express.json());
