@@ -48,7 +48,7 @@ export const sendOTP = async (req: Request, res: Response) => {
 
     console.log('OTP Email Preview URL:', previewUrl);
 
-    return sendSuccess(res, 200, 'OTP sent successfully', { previewUrl });
+    return sendSuccess(res, 200, "OTP sent successfully");
   } catch (error) {
     console.error('Error sending OTP:', error);
     return sendError(res, 500, 'INTERNAL_SERVER_ERROR', 'Internal server error');
