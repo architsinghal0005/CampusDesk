@@ -14,9 +14,12 @@ type MailOptions = {
 let transporterPromise: Promise<MailTransporter> | null = null;
 
 async function getTransporter() {
+    console.log("A. getTransporter called");
   if (!transporterPromise) {
     transporterPromise = (async () => {
+        console.log("B. Before createTestAccount");
       const testAccount = await nodemailer.createTestAccount();
+        console.log("C. After createTestAccount");
 
       return nodemailer.createTransport({
         host: 'smtp.ethereal.email',
@@ -34,7 +37,12 @@ async function getTransporter() {
 }
 
 export async function sendCampusDeskMail({ to, subject, text, html }: MailOptions) {
-  const transporter = await getTransporter();
+     console.log("D. Before getTransporter");
+    const transporter = await getTransporter();
+    console.log("E. After getTransporter");
+
+  console.log("F. Before sendMail");
+
   const info = await transporter.sendMail({
     from: FROM_ADDRESS,
     to,
@@ -42,6 +50,8 @@ export async function sendCampusDeskMail({ to, subject, text, html }: MailOption
     text,
     html
   });
+  console.log("G. After sendMail");
+
 
   return {
     info,

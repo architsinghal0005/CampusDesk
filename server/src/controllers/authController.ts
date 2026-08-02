@@ -7,8 +7,9 @@ import { sendError, sendSuccess } from '../utils/apiResponse.js';
 // Send OTP to user's email
 export const sendOTP = async (req: Request, res: Response) => {
   try {
+     console.log("1. SEND OTP endpoint hit");
     const { email } = req.body;
-
+    console.log("2. Email:", email);
     if (!email) {
       return sendError(res, 400, 'BAD_REQUEST', 'Email is required');
     }
@@ -25,11 +26,13 @@ export const sendOTP = async (req: Request, res: Response) => {
     if (recentRequests >= 3) {
       return sendError(res, 429, 'TOO_MANY_REQUESTS', 'Too many OTP requests. Please try again in 10 minutes.');
     }
+    console.log("3. Rate limit passed");
+
 
     // Generate 6-digit OTP code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes expiration
-
+    console.log("4. OTP generated");
     // Save OTP to database
     await prisma.oTP.create({
       data: {
@@ -38,6 +41,9 @@ export const sendOTP = async (req: Request, res: Response) => {
         expiresAt
       }
     });
+   console.log("5. OTP saved in database");
+
+    console.log("6. Before sendCampusDeskMail");
 
     const { previewUrl } = await sendCampusDeskMail({
       to: email,
@@ -45,7 +51,7 @@ export const sendOTP = async (req: Request, res: Response) => {
       text: `Your OTP code is ${code}. It expires in 5 minutes.`,
       html: `<p>Your OTP code is <b>${code}</b>. It expires in 5 minutes.</p>`
     });
-
+     console.log("7. After sendCampusDeskMail");
     console.log('OTP Email Preview URL:', previewUrl);
 
     return sendSuccess(res, 200, "OTP sent successfully");
