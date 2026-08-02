@@ -63,7 +63,8 @@ export const sendOTP = async (req: Request, res: Response) => {
 // Verify OTP and return JWT token
 export const verifyOTP = async (req: Request, res: Response) => {
   try {
-    const { email, code, name } = req.body;
+    const { email, code, name, role } = req.body;
+    const selectedRole = role === "ADMIN" ? "ADMIN" : "STUDENT";
 
     if (!email || !code) {
       return sendError(
@@ -98,14 +99,23 @@ export const verifyOTP = async (req: Request, res: Response) => {
       where: { email },
     });
 
-    // Create user if not exists (Default role: STUDENT)
+    if (user && user.role !== selectedRole) {
+      return sendError(
+        res,
+        403,
+        "FORBIDDEN",
+        `This email is already registered as a ${user.role}. Please login using that role.`,
+      );
+    }
+
+    // Create user if not exists with the selected role
     if (!user) {
       user = await prisma.user.create({
         data: {
           email,
           name: name || email.split("@")[0],
           password: "", // Password not required for OTP auth
-          role: "STUDENT",
+          role: selectedRole,
         },
       });
     }

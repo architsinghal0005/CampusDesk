@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
+  const [role, setRole] = useState("STUDENT");
   const [step, setStep] = useState("SEND_OTP"); // 'SEND_OTP' | 'VERIFY_OTP'
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -18,7 +19,7 @@ function LoginPage() {
     setError("");
 
     try {
-      const response = await api.post("/auth/send-otp", { email });
+      const response = await api.post("/auth/send-otp", { email, role });
       setMessage(response.data.message);
       setStep("VERIFY_OTP");
     } catch (err) {
@@ -38,6 +39,7 @@ function LoginPage() {
       const response = await api.post("/auth/verify-otp", {
         email,
         code: otp,
+        role,
       });
 
       const { token, user } = response.data.data;
@@ -79,6 +81,35 @@ function LoginPage() {
                 className="field-input"
               />
             </div>
+
+            <div>
+              <label className="field-label">Account Type</label>
+              <div className="flex gap-3">
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="STUDENT"
+                    checked={role === "STUDENT"}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="h-4 w-4 accent-blue-600"
+                  />
+                  Student
+                </label>
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="ADMIN"
+                    checked={role === "ADMIN"}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="h-4 w-4 accent-blue-600"
+                  />
+                  Admin
+                </label>
+              </div>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
