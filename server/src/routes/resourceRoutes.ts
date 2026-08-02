@@ -19,7 +19,7 @@ router.get('/:id', getResourceById);
 
 // Admin only routes
 router.post('/', authorizeAdmin, createResource);
-router.put('/:id', authorizeAdmin, updateResource);
+router.patch('/:id', authorizeAdmin, updateResource);
 router.delete('/:id', authorizeAdmin, deleteResource);
 
 export default router;

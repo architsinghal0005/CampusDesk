@@ -14,6 +14,21 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
+function AdminRoute({ children }) {
+  const token = localStorage.getItem('token');
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user.role !== 'ADMIN') {
+    return <Navigate to="/resources" replace />;
+  }
+
+  return children;
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -46,9 +61,9 @@ function App() {
         <Route
           path="/admin"
           element={
-            <ProtectedRoute>
+            <AdminRoute>
               <AdminDashboardPage />
-            </ProtectedRoute>
+            </AdminRoute>
           }
         />
         <Route path="*" element={<Navigate to="/login" replace />} />

@@ -37,13 +37,15 @@ function AdminDashboardPage() {
   // Fetch Resources
   const fetchResources = async () => {
     setLoading(true);
+    setError('');
     try {
       const response = await api.get('/resources', {
         params: { search: resourceSearch, limit: 100 }
       });
-      setResources(response.data.resources);
+      setResources(response.data.data?.resources || []);
     } catch (err) {
       console.error('Failed to fetch resources:', err);
+      setError(err.response?.data?.message || 'Failed to load resources');
     } finally {
       setLoading(false);
     }
@@ -52,11 +54,13 @@ function AdminDashboardPage() {
   // Fetch Bookings
   const fetchBookings = async () => {
     setLoading(true);
+    setError('');
     try {
-      const response = await api.get('/bookings');
-      setBookings(response.data.bookings);
+      const response = await api.get('/admin/bookings');
+      setBookings(response.data.data?.bookings || []);
     } catch (err) {
       console.error('Failed to fetch bookings:', err);
+      setError(err.response?.data?.message || 'Failed to load bookings');
     } finally {
       setLoading(false);
     }
@@ -93,7 +97,7 @@ function AdminDashboardPage() {
     e.preventDefault();
     try {
       if (editResourceId) {
-        await api.put(`/resources/${editResourceId}`, resourceFormData);
+        await api.patch(`/resources/${editResourceId}`, resourceFormData);
       } else {
         await api.post('/resources', resourceFormData);
       }
@@ -192,8 +196,16 @@ function AdminDashboardPage() {
               </button>
             </div>
 
-            {loading ? (
+            {error ? (
+              <div className="message-error text-center">
+                {error}
+              </div>
+            ) : loading ? (
               <div className="py-8 text-center text-sm text-slate-500">Loading resources...</div>
+            ) : resources.length === 0 ? (
+              <div className="empty-state">
+                No resources found.
+              </div>
             ) : (
               <div className="table-shell overflow-x-auto">
                 <table className="w-full min-w-[720px] text-left text-sm">
@@ -282,8 +294,16 @@ function AdminDashboardPage() {
               </div>
             </div>
 
-            {loading ? (
+            {error ? (
+              <div className="message-error text-center">
+                {error}
+              </div>
+            ) : loading ? (
               <div className="py-8 text-center text-sm text-slate-500">Loading bookings...</div>
+            ) : filteredBookings.length === 0 ? (
+              <div className="empty-state">
+                No bookings found.
+              </div>
             ) : (
               <div className="table-shell overflow-x-auto">
                 <table className="w-full min-w-[900px] text-left text-sm">

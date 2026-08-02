@@ -5,6 +5,8 @@ import authRoutes from './routes/authRoutes.js';
 import resourceRoutes from './routes/resourceRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import { startBookingCron } from './utils/bookingCron.js';
+import { authenticate, authorizeAdmin } from './middleware/auth.js';
+import { getBookings } from './controllers/bookingController.js';
 
 dotenv.config();
 
@@ -46,6 +48,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.get('/api/admin/bookings', authenticate, authorizeAdmin, getBookings);
 
 startBookingCron();
 

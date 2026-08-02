@@ -84,7 +84,7 @@ function ResourcesPage() {
     e.preventDefault();
     try {
       if (editId) {
-        await api.put(`/resources/${editId}`, formData);
+        await api.patch(`/resources/${editId}`, formData);
       } else {
         await api.post("/resources", formData);
       }

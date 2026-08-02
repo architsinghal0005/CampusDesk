@@ -13,7 +13,6 @@ function LoginPage() {
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
-    console.log("Send OTP button clicked");
     setLoading(true);
     setMessage("");
     setError("");
@@ -21,8 +20,6 @@ function LoginPage() {
     try {
       const response = await api.post("/auth/send-otp", { email });
       setMessage(response.data.message);
-
-      console.log(response.data.data);
       setStep("VERIFY_OTP");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to send OTP. Try again.");
@@ -48,7 +45,7 @@ function LoginPage() {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      navigate("/resources");
+      navigate(user.role === 'ADMIN' ? '/admin' : '/resources');
     } catch (err) {
       setError(err.response?.data?.message || "Invalid OTP code. Try again.");
     } finally {
