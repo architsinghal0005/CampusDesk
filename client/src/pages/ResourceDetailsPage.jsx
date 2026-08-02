@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 function ResourceDetailsPage() {
   const { id } = useParams();
@@ -9,25 +9,29 @@ function ResourceDetailsPage() {
   const [resource, setResource] = useState(null);
   const [todayBookings, setTodayBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   // Booking Form State
-  const [purpose, setPurpose] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+  const [purpose, setPurpose] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [bookingLoading, setBookingLoading] = useState(false);
-  const [bookingError, setBookingError] = useState('');
-  const [bookingSuccess, setBookingSuccess] = useState('');
+  const [bookingError, setBookingError] = useState("");
+  const [bookingSuccess, setBookingSuccess] = useState("");
 
   const fetchDetails = async () => {
     setLoading(true);
-    setError('');
+    setError("");
     try {
       const response = await api.get(`/resources/${id}`);
-      setResource(response.data.resource);
-      setTodayBookings(response.data.todayBookings);
+      const { resource, todayBookings } = response.data.data;
+
+      setResource(resource);
+      setTodayBookings(todayBookings || []);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load resource details');
+      setError(
+        err.response?.data?.message || "Failed to load resource details",
+      );
     } finally {
       setLoading(false);
     }
@@ -35,6 +39,18 @@ function ResourceDetailsPage() {
 
   useEffect(() => {
     fetchDetails();
+  }, [id]);
+
+  useEffect(() => {
+    const handleBookingUpdated = () => {
+      fetchDetails();
+    };
+
+    window.addEventListener('booking-updated', handleBookingUpdated);
+
+    return () => {
+      window.removeEventListener('booking-updated', handleBookingUpdated);
+    };
   }, [id]);
 
   // Generate hourly time slots for 8:00 AM to 8:00 PM timeline
@@ -58,15 +74,15 @@ function ResourceDetailsPage() {
       });
 
       // Format ISO strings for local datetime-local input
-      const pad = (n) => (n < 10 ? '0' + n : n);
+      const pad = (n) => (n < 10 ? "0" + n : n);
       const startStr = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}T${pad(hour)}:00`;
       const endStr = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}T${pad(hour + 1)}:00`;
 
       slots.push({
-        label: `${hour % 12 || 12}:00 ${hour < 12 ? 'AM' : 'PM'} - ${(hour + 1) % 12 || 12}:00 ${hour + 1 < 12 ? 'AM' : 'PM'}`,
+        label: `${hour % 12 || 12}:00 ${hour < 12 ? "AM" : "PM"} - ${(hour + 1) % 12 || 12}:00 ${hour + 1 < 12 ? "AM" : "PM"}`,
         isBooked,
         startStr,
-        endStr
+        endStr,
       });
     }
     return slots;
@@ -76,30 +92,30 @@ function ResourceDetailsPage() {
     if (slot.isBooked) return;
     setStartTime(slot.startStr);
     setEndTime(slot.endStr);
-    setBookingError('');
-    setBookingSuccess('');
+    setBookingError("");
+    setBookingSuccess("");
   };
 
   const handleBook = async (e) => {
     e.preventDefault();
     setBookingLoading(true);
-    setBookingError('');
-    setBookingSuccess('');
+    setBookingError("");
+    setBookingSuccess("");
 
     try {
-      await api.post('/bookings', {
+      await api.post("/bookings", {
         resourceId: id,
         purpose,
         startTime: new Date(startTime).toISOString(),
-        endTime: new Date(endTime).toISOString()
+        endTime: new Date(endTime).toISOString(),
       });
 
-      setBookingSuccess('Resource booked successfully!');
-      setPurpose('');
-      fetchDetails();
+      setBookingSuccess("Resource booked successfully!");
+      setPurpose("");
+      window.dispatchEvent(new Event('booking-updated'));
     } catch (err) {
       // Show backend error message without clearing form
-      setBookingError(err.response?.data?.message || 'Booking failed');
+      setBookingError(err.response?.data?.message || "Booking failed");
     } finally {
       setBookingLoading(false);
     }
@@ -108,7 +124,9 @@ function ResourceDetailsPage() {
   if (loading) {
     return (
       <div className="page-shell flex items-center justify-center">
-        <p className="text-center text-sm text-slate-500">Loading resource details...</p>
+        <p className="text-center text-sm text-slate-500">
+          Loading resource details...
+        </p>
       </div>
     );
   }
@@ -116,11 +134,10 @@ function ResourceDetailsPage() {
   if (error || !resource) {
     return (
       <div className="page-shell flex flex-col items-center justify-center">
-        <p className="mb-4 max-w-md text-center text-sm text-rose-600">{error || 'Resource not found'}</p>
-        <button
-          onClick={() => navigate('/resources')}
-          className="btn-primary"
-        >
+        <p className="mb-4 max-w-md text-center text-sm text-rose-600">
+          {error || "Resource not found"}
+        </p>
+        <button onClick={() => navigate("/resources")} className="btn-primary">
           Back to Resources
         </button>
       </div>
@@ -133,7 +150,7 @@ function ResourceDetailsPage() {
     <div className="page-shell text-slate-800">
       <div className="page-container">
         <button
-          onClick={() => navigate('/resources')}
+          onClick={() => navigate("/resources")}
           className="mb-4 inline-flex max-w-full text-sm font-medium text-blue-700 transition hover:text-blue-900"
         >
           ← Back to Resources
@@ -142,21 +159,39 @@ function ResourceDetailsPage() {
         {/* Resource Header */}
         <div className="panel mb-6">
           <div className="mb-2 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <h1 className="max-w-[22rem] text-2xl font-semibold tracking-tight text-slate-900 sm:max-w-none">{resource.name}</h1>
+            <h1 className="max-w-[22rem] text-2xl font-semibold tracking-tight text-slate-900 sm:max-w-none">
+              {resource.name}
+            </h1>
             <span className="badge border-blue-100 bg-blue-50 text-blue-700">
               {resource.category}
             </span>
           </div>
-          {resource.location && <p className="mb-1 text-sm text-slate-500">Location: {resource.location}</p>}
-          {resource.capacity && <p className="mb-2 text-sm text-slate-500">Capacity: {resource.capacity} seats</p>}
-          {resource.description && <p className="mt-2 text-sm leading-relaxed text-slate-600">{resource.description}</p>}
+          {resource.location && (
+            <p className="mb-1 text-sm text-slate-500">
+              Location: {resource.location}
+            </p>
+          )}
+          {resource.capacity && (
+            <p className="mb-2 text-sm text-slate-500">
+              Capacity: {resource.capacity} seats
+            </p>
+          )}
+          {resource.description && (
+            <p className="mt-2 text-sm leading-relaxed text-slate-600">
+              {resource.description}
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:gap-6">
           {/* Today's Schedule Timeline */}
           <div className="panel">
-            <h2 className="section-title mb-2">Today's Schedule (8 AM - 8 PM)</h2>
-            <p className="section-note mb-4">Click any available slot to prefill booking time.</p>
+            <h2 className="section-title mb-2">
+              Today's Schedule (8 AM - 8 PM)
+            </h2>
+            <p className="section-note mb-4">
+              Click any available slot to prefill booking time.
+            </p>
 
             <div className="max-h-[380px] space-y-2 overflow-y-auto pr-1">
               {slots.map((slot, idx) => (
@@ -167,13 +202,15 @@ function ResourceDetailsPage() {
                   onClick={() => handleSlotClick(slot)}
                   className={`flex w-full items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 text-left text-xs font-medium transition ${
                     slot.isBooked
-                      ? 'cursor-not-allowed border-rose-200 bg-rose-50 text-rose-700'
-                      : 'cursor-pointer border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                      ? "cursor-not-allowed border-rose-200 bg-rose-50 text-rose-700"
+                      : "cursor-pointer border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
                   }`}
                 >
-                  <span className="min-w-0 flex-1 whitespace-normal leading-relaxed">{slot.label}</span>
+                  <span className="min-w-0 flex-1 whitespace-normal leading-relaxed">
+                    {slot.label}
+                  </span>
                   <span className="text-[10px] font-semibold uppercase tracking-wide">
-                    {slot.isBooked ? 'Booked' : 'Available'}
+                    {slot.isBooked ? "Booked" : "Available"}
                   </span>
                 </button>
               ))}
@@ -186,9 +223,7 @@ function ResourceDetailsPage() {
               <h2 className="section-title mb-4">Book Resource</h2>
 
               {bookingError && (
-                <div className="message-error mb-4 text-xs">
-                  {bookingError}
-                </div>
+                <div className="message-error mb-4 text-xs">{bookingError}</div>
               )}
 
               {bookingSuccess && (
@@ -199,7 +234,9 @@ function ResourceDetailsPage() {
 
               <form onSubmit={handleBook} className="space-y-4 sm:space-y-5">
                 <div>
-                  <label className="field-label" htmlFor="booking-purpose">Purpose / Details</label>
+                  <label className="field-label" htmlFor="booking-purpose">
+                    Purpose / Details
+                  </label>
                   <input
                     id="booking-purpose"
                     type="text"
@@ -212,7 +249,9 @@ function ResourceDetailsPage() {
                 </div>
 
                 <div>
-                  <label className="field-label" htmlFor="booking-start-time">Start Time</label>
+                  <label className="field-label" htmlFor="booking-start-time">
+                    Start Time
+                  </label>
                   <input
                     id="booking-start-time"
                     type="datetime-local"
@@ -224,7 +263,9 @@ function ResourceDetailsPage() {
                 </div>
 
                 <div>
-                  <label className="field-label" htmlFor="booking-end-time">End Time</label>
+                  <label className="field-label" htmlFor="booking-end-time">
+                    End Time
+                  </label>
                   <input
                     id="booking-end-time"
                     type="datetime-local"
@@ -238,9 +279,9 @@ function ResourceDetailsPage() {
                 <button
                   type="submit"
                   disabled={bookingLoading}
-                    className="btn-primary mt-2 w-full"
+                  className="btn-primary mt-2 w-full"
                 >
-                  {bookingLoading ? 'Booking...' : 'Book Resource'}
+                  {bookingLoading ? "Booking..." : "Book Resource"}
                 </button>
               </form>
             </div>

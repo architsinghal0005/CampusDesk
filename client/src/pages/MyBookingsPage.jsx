@@ -14,7 +14,7 @@ function MyBookingsPage() {
     setError('');
     try {
       const response = await api.get('/bookings');
-      setBookings(response.data.bookings);
+      setBookings(response.data.data?.bookings || []);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load bookings');
     } finally {
@@ -39,6 +39,7 @@ function MyBookingsPage() {
 
     try {
       await api.put(`/bookings/${id}/cancel`);
+      window.dispatchEvent(new Event('booking-updated'));
     } catch (err) {
       // Rollback state if API call fails
       setBookings(previousBookings);
@@ -55,7 +56,7 @@ function MyBookingsPage() {
     return 'UPCOMING';
   };
 
-  const filteredBookings = bookings.filter((b) => {
+  const filteredBookings = (bookings || []).filter((b) => {
     const derivedStatus = getDerivedStatus(b);
     if (filter === 'UPCOMING') return derivedStatus === 'UPCOMING';
     if (filter === 'COMPLETED') return derivedStatus === 'COMPLETED';
