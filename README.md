@@ -1,90 +1,292 @@
 # CampusDesk
 
-CampusDesk is a campus resource booking app. Students sign in with email OTP, browse available resources, book time slots, and manage their bookings. Admins can manage resources and review bookings from a separate dashboard. The server also sends booking reminders and marks finished approved bookings as completed.
+CampusDesk is a full-stack campus resource booking system that allows students to reserve campus facilities such as seminar halls, labs, conference rooms, auditoriums, and sports facilities. It includes role-based authentication, booking conflict detection, and an admin dashboard for resource and booking management.
+
+---
 
 ## Tech Stack
 
-- Frontend: React, Vite, Tailwind CSS, React Router, Axios
-- Backend: Node.js, Express, TypeScript, Prisma
-- Database: PostgreSQL
-- Email and background jobs: Nodemailer, node-cron
-- Auth: JWT
+### Frontend
+
+- React
+- Vite
+- Tailwind CSS
+- React Router
+- Axios
+
+### Backend
+
+- Node.js
+- Express
+- TypeScript
+- Prisma ORM
+
+### Database
+
+- PostgreSQL (Neon or Local PostgreSQL)
+
+### Authentication
+
+- Email OTP (Console mode for development)
+- JWT
+
+### Deployment
+
+- Frontend: Vercel
+- Backend: Render
+
+---
 
 ## Features
 
-- Email OTP login
-- Resource search and booking
-- Booking schedule view
-- Booking reminders sent one hour before start time
+### Student
+
+- Login using Email OTP
+- Browse available campus resources
+- Search and filter resources
+- View resource schedules
+- Book available time slots
+- Prevent overlapping bookings
+- View and cancel personal bookings
+
+### Admin
+
+- Separate Admin Login
+- Add resources
+- Edit resources
+- Delete resources
+- View all bookings
+- Cancel bookings
+- Filter bookings by resource, status, and date
+
+### System
+
+- Role-based authentication
+- Booking conflict detection
+- Automatic booking reminders
 - Automatic completion of expired approved bookings
-- Admin resource management
-- Admin booking management
 
-## Installation
+---
 
-1. Install dependencies in both apps:
+# Project Structure
 
-	```bash
-	cd server
-	npm install
+```
+CampusDesk
+│
+├── client
+│   ├── src
+│   └── ...
+│
+├── server
+│   ├── prisma
+│   ├── src
+│   └── ...
+│
+└── README.md
+```
 
-	cd ../client
-	npm install
-	```
+---
 
-2. Start PostgreSQL locally or point `DATABASE_URL` at a running database, then configure the server `.env` file.
+# Installation
 
-## Environment Variables
+Clone the repository
 
-Server `.env`:
+```bash
+git clone https://github.com/architsinghal0005/CampusDesk.git
 
-- `DATABASE_URL`
-- `PORT`
-- `JWT_SECRET`
+cd CampusDesk
+```
 
-The client currently uses the API URL directly in the source, so it does not require a separate environment file.
+---
 
-## Run Locally
+## Install Dependencies
 
-Start the backend:
+### Backend
 
 ```bash
 cd server
-npm run dev
+
+npm install
 ```
 
-Start the frontend:
+### Frontend
 
 ```bash
-cd client
-npm run dev
+cd ../client
+
+npm install
 ```
 
-## Database Migration
+---
 
-Run Prisma migrations from the server folder:
+# Environment Variables
+
+Create a `.env` file inside the **server** folder.
+
+Example:
+
+```env
+DATABASE_URL=your_postgresql_database_url
+
+PORT=5000
+
+JWT_SECRET=your_jwt_secret
+
+CLIENT_URL=http://localhost:5173
+
+OTP_MODE=console
+```
+
+### Environment Variables
+
+| Variable     | Description                        |
+| ------------ | ---------------------------------- |
+| DATABASE_URL | PostgreSQL connection string       |
+| PORT         | Backend port                       |
+| JWT_SECRET   | Secret used for JWT authentication |
+| CLIENT_URL   | Frontend URL                       |
+| OTP_MODE     | Use `console` during development   |
+
+> **Note**
+>
+> OTP is printed in the backend console during development.
+> For production, configure an email provider such as Resend or SMTP.
+
+---
+
+# Database Setup
+
+Run Prisma migrations
 
 ```bash
 cd server
+
 npx prisma migrate dev
 ```
 
-This command needs a running PostgreSQL database. If `localhost:5432` is not available, start Postgres first or update `DATABASE_URL` to a reachable host.
+---
 
-If you only need to apply existing migrations during deployment, use:
+# Seed Database
+
+Populate the database with sample resources.
+
+```bash
+npm run seed
+```
+
+---
+
+# Run the Project
+
+## Start Backend
+
+```bash
+cd server
+
+npm run dev
+```
+
+Backend runs at
+
+```
+http://localhost:5000
+```
+
+---
+
+## Start Frontend
+
+```bash
+cd client
+
+npm run dev
+```
+
+Frontend runs at
+
+```
+http://localhost:5173
+```
+
+---
+
+# Production Deployment
+
+## Backend
+
+Deploy to Render.
+
+Environment Variables:
+
+```
+DATABASE_URL
+
+JWT_SECRET
+
+CLIENT_URL
+
+OTP_MODE=console
+```
+
+Run migrations during deployment:
 
 ```bash
 npx prisma migrate deploy
 ```
 
-## Seed Data
+---
 
-No seed script is included yet. If you add one, place it under `server/prisma` and run it with Prisma's seed command.
+## Frontend
 
-## Deployment
+Deploy to Vercel.
 
-- Deploy the server to a Node host such as Render, Railway, or Fly.io.
-- Set `DATABASE_URL`, `PORT`, and `JWT_SECRET` in the server environment.
-- Run Prisma migrations during deploy with `npx prisma migrate deploy`.
-- Deploy the client to Vercel or Netlify and point it at the deployed API.
-- Make sure the API URL in the client matches the deployed backend.
+Update the frontend API URL to point to the deployed backend.
+
+---
+
+# Live Demo
+
+Frontend
+
+```
+https://campus-desk-sand.vercel.app
+```
+
+Backend
+
+```
+https://campusdesk-api.onrender.com
+```
+
+---
+
+# Authentication
+
+The application uses Email OTP authentication.
+
+Development mode uses:
+
+```
+OTP_MODE=console
+```
+
+The generated OTP is printed in the backend console.
+
+For production deployments, configure an email provider to send OTP emails.
+
+---
+
+# Design Document
+
+Please refer to **[DESIGN.md](./DESIGN.md)** for:
+
+- Overlap-check logic
+- Double-booking race condition discussion
+- Authentication persistence after refresh
+- Debugging experience
+
+---
+
+# License
+
+This project was created for educational purposes and hackathon submissions.
