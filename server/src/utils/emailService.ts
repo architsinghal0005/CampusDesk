@@ -1,10 +1,18 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: Number(process.env.SMTP_PORT) || 587,
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
 export const sendOTPEmail = async (email: string, otp: string): Promise<void> => {
-  const { error } = await resend.emails.send({
-    from: 'CampusDesk <onboarding@resend.dev>',
+  const mailOptions = {
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
     to: email,
     subject: 'CampusDesk Login OTP',
     html: `
@@ -20,9 +28,7 @@ export const sendOTPEmail = async (email: string, otp: string): Promise<void> =>
         </p>
       </div>
     `,
-  });
+  };
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  await transporter.sendMail(mailOptions);
 };
