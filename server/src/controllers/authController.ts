@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import prisma from "../prisma.js";
 import { sendError, sendSuccess } from "../utils/apiResponse.js";
-import { sendOTPEmail } from "../utils/emailService.js";
 
 // Send OTP to user's email
 export const sendOTP = async (req: Request, res: Response) => {
@@ -34,9 +33,6 @@ export const sendOTP = async (req: Request, res: Response) => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes expiration
 
-    // Send email first; if it fails, do not save OTP to DB
-    await sendOTPEmail(email, code);
-
     // Save OTP to database
     await prisma.oTP.create({
       data: {
@@ -46,6 +42,12 @@ export const sendOTP = async (req: Request, res: Response) => {
       },
     });
 
+    console.log("=================================");
+    console.log("CampusDesk OTP");
+    console.log(`Email: ${email}`);
+    console.log(`OTP: ${code}`);
+    console.log("=================================");
+
     return sendSuccess(res, 200, "OTP sent successfully");
   } catch (error) {
     console.error("Error sending OTP:", error);
@@ -53,7 +55,7 @@ export const sendOTP = async (req: Request, res: Response) => {
       res,
       500,
       "INTERNAL_SERVER_ERROR",
-      "Failed to send OTP email. Please try again.",
+      "Internal server error",
     );
   }
 };
