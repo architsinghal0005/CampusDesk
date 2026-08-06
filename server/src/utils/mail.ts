@@ -1,7 +1,6 @@
-import nodemailer from "nodemailer";
+import nodemailer from 'nodemailer';
 
-const FROM_ADDRESS =
-  process.env.SMTP_FROM || '"CampusDesk" <no-reply@campusdesk.edu>';
+const FROM_ADDRESS = '"CampusDesk" <no-reply@campusdesk.edu>';
 
 type MailTransporter = ReturnType<typeof nodemailer.createTransport>;
 
@@ -15,32 +14,32 @@ type MailOptions = {
 let transporterPromise: Promise<MailTransporter> | null = null;
 
 async function getTransporter() {
+    console.log("A. getTransporter called");
   if (!transporterPromise) {
-    transporterPromise = Promise.resolve(
-      nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT),
+    transporterPromise = (async () => {
+        console.log("B. Before createTestAccount");
+      const testAccount = await nodemailer.createTestAccount();
+        console.log("C. After createTestAccount");
+
+      return nodemailer.createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
         secure: false,
         auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      }),
-    );
+          user: testAccount.user,
+          pass: testAccount.pass
+        }
+      });
+    })();
   }
 
   return transporterPromise;
 }
 
-export async function sendCampusDeskMail({
-  to,
-  subject,
-  text,
-  html,
-}: MailOptions) {
-  console.log("D. Before getTransporter");
-  const transporter = await getTransporter();
-  console.log("E. After getTransporter");
+export async function sendCampusDeskMail({ to, subject, text, html }: MailOptions) {
+     console.log("D. Before getTransporter");
+    const transporter = await getTransporter();
+    console.log("E. After getTransporter");
 
   console.log("F. Before sendMail");
 
@@ -49,12 +48,13 @@ export async function sendCampusDeskMail({
     to,
     subject,
     text,
-    html,
+    html
   });
   console.log("G. After sendMail");
 
+
   return {
     info,
-    previewUrl: nodemailer.getTestMessageUrl(info),
+    previewUrl: nodemailer.getTestMessageUrl(info)
   };
 }
