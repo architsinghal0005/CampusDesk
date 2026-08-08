@@ -308,6 +308,8 @@ npm run dev
 4. Now when you login by email you will get otp in cd server terminal.
 5. After that you can sign in.
 
+#Demo video link: https://drive.google.com/file/d/1OaMmswb6moncf5fI7OTiwVdrBDadnhlP/view?usp=sharing
+
 # License
 
 This project was created for educational purposes and hackathon submissions.
