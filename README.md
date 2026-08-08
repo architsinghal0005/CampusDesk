@@ -286,6 +286,27 @@ Please refer to **[DESIGN.md](./DESIGN.md)** for:
 - Debugging experience
 
 ---
+#How you can get otp
+ Steps:
+ 1. Open project locally in your code editor.Installation steps given above.
+ 2. ## Start Backend
+
+```bash
+cd server
+
+npm install
+
+npm run dev
+```
+3. ## Start Frontend
+
+```bash
+cd client
+npm install
+npm run dev
+```
+4. Now when you login by email you will get otp in cd server terminal.
+5. After that you can sign in.
 
 # License
 
